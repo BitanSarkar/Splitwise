@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Google OAuth credentials file
+client_secret_*.json
+
+# SQLite database
+*.db
+*.db-shm
+*.db-wal
+
+# Local Claude Code config
+.claude/
