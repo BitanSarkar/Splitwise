@@ -5,6 +5,7 @@ import { recordGuestSettlement } from "@/lib/actions";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { Spinner } from "@/components/spinner";
 
 // A member in this group — shape from `getGroupDetails`.
 export interface GuestSettleMember {
@@ -328,8 +329,9 @@ export function GuestSettleDialog({ groupId, members, rawBalances }: Props) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-60"
               >
+                {loading && <Spinner className="h-3.5 w-3.5" />}
                 {loading ? "Recording…" : "Record payment"}
               </button>
             </div>

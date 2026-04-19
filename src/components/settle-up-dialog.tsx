@@ -5,6 +5,7 @@ import { settleUp } from "@/lib/actions";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { Spinner } from "@/components/spinner";
 
 interface Settlement {
   from: string; to: string; amount: number; currency: string;
@@ -147,8 +148,9 @@ export function SettleUpDialog({ groupId, settlements, currentUserId }: Props) {
                   <button
                     onClick={handleSettle}
                     disabled={loading || !note.trim() || !payAmount}
-                    className="flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-60"
                   >
+                    {loading && <Spinner className="h-3.5 w-3.5" />}
                     {loading ? "Recording…" : "Record Payment"}
                   </button>
                 </div>

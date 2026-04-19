@@ -236,7 +236,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} />
               <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={(v) => `${v}`} />
               <Tooltip formatter={fmt} />
-              <Area type="monotone" dataKey="cumulative" stroke="#10b981" fill="url(#cumGrad)" strokeWidth={2} isAnimationActive={false} dot={{ r: 3 }} />
+              <Area type="monotone" dataKey="cumulative" stroke="#10b981" fill="url(#cumGrad)" strokeWidth={2} isAnimationActive={true} dot={{ r: 3 }} />
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -249,7 +249,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} />
               <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} />
               <Tooltip formatter={fmt} />
-              <Line type="monotone" dataKey="daily" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
+              <Line type="monotone" dataKey="daily" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={true} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -263,8 +263,8 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
               <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} />
               <Tooltip formatter={fmt} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Paid" fill="#10b981" isAnimationActive={false} />
-              <Bar dataKey="Consumed" fill="#f59e0b" isAnimationActive={false} />
+              <Bar dataKey="Paid" fill="#10b981" isAnimationActive={true} />
+              <Bar dataKey="Consumed" fill="#f59e0b" isAnimationActive={true} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -277,7 +277,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
               <XAxis type="number" tick={{ fontSize: 11, fill: "#6b7280" }} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} width={60} />
               <Tooltip formatter={fmt} />
-              <Bar dataKey="balance" isAnimationActive={false}>
+              <Bar dataKey="balance" isAnimationActive={true}>
                 {netBalances.map((d, i) => (
                   <Cell key={i} fill={d.balance >= 0 ? "#10b981" : "#ef4444"} />
                 ))}
@@ -290,7 +290,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
         <ChartCard title="Who paid" subtitle="Share of total payments">
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
-              <Pie data={paidByPie} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70} isAnimationActive={false}>
+              <Pie data={paidByPie} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70} isAnimationActive={true}>
                 {paidByPie.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
@@ -305,7 +305,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
         <ChartCard title="Split-type breakdown" subtitle="Expense count">
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
-              <Pie data={splitTypeBreakdown} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70} isAnimationActive={false}>
+              <Pie data={splitTypeBreakdown} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70} isAnimationActive={true}>
                 {splitTypeBreakdown.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
@@ -324,7 +324,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
               <XAxis type="number" tick={{ fontSize: 11, fill: "#6b7280" }} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#6b7280" }} width={90} />
               <Tooltip formatter={fmt} />
-              <Bar dataKey="amount" fill="#8b5cf6" isAnimationActive={false} />
+              <Bar dataKey="amount" fill="#8b5cf6" isAnimationActive={true} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -337,7 +337,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} />
               <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} />
               <Tooltip formatter={fmt} />
-              <Bar dataKey="amount" fill="#06b6d4" isAnimationActive={false} />
+              <Bar dataKey="amount" fill="#06b6d4" isAnimationActive={true} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -347,7 +347,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
           <ChartCard title="Currency mix" subtitle="Total spend by currency (raw, no conversion)">
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
-                <Pie data={currencyMix} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70} isAnimationActive={false}>
+                <Pie data={currencyMix} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70} isAnimationActive={true}>
                   {currencyMix.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}

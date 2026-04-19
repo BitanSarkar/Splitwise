@@ -9,6 +9,7 @@ import {
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Copy, Check } from "lucide-react";
 import QRCode from "qrcode";
+import { Spinner } from "@/components/spinner";
 
 // Kept in sync with GUEST_EMOJIS in src/lib/actions.ts — server rejects any
 // other emoji so the two lists must match.
@@ -137,7 +138,10 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
               <p className="text-sm font-medium text-gray-700">Invite by QR or link</p>
               <div className="flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg py-3">
                 {qrLoading ? (
-                  <div className="h-[200px] w-[200px] flex items-center justify-center text-xs text-gray-400">Generating…</div>
+                  <div className="h-[200px] w-[200px] flex flex-col items-center justify-center gap-2 text-xs text-gray-400">
+                    <Spinner className="h-5 w-5 text-emerald-500" />
+                    <span>Generating…</span>
+                  </div>
                 ) : qrError ? (
                   <div className="h-[200px] w-[200px] flex items-center justify-center text-xs text-red-500 text-center px-3">{qrError}</div>
                 ) : qrDataUrl ? (
@@ -186,9 +190,10 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
               <button
                 type="submit"
                 disabled={loading || !email.trim()}
-                className="w-full px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-60"
               >
-                {loading ? "Adding..." : "Add by email"}
+                {loading && <Spinner className="h-3.5 w-3.5" />}
+                {loading ? "Adding…" : "Add by email"}
               </button>
             </form>
 
@@ -249,9 +254,10 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
                 <button
                   type="submit"
                   disabled={guestLoading || !guestName.trim()}
-                  className="flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-60"
                 >
-                  {guestLoading ? "Adding…" : `Add guest`}
+                  {guestLoading && <Spinner className="h-3.5 w-3.5" />}
+                  {guestLoading ? "Adding…" : "Add guest"}
                 </button>
               </div>
             </form>

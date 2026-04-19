@@ -138,7 +138,16 @@ export function BalanceDisplay({ rawBalances, members, currentUserId, defaultCur
           </div>
 
           {isPending ? (
-            <div className="px-4 py-3 text-sm text-gray-400">Fetching live rates…</div>
+            <div className="px-4 py-3 space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center px-0 py-1 gap-3">
+                  <div className="skeleton h-4 w-20 rounded" />
+                  <div className="skeleton h-3 w-4 rounded" />
+                  <div className="skeleton h-4 w-16 rounded" />
+                  <div className="skeleton h-4 w-14 rounded ml-auto" />
+                </div>
+              ))}
+            </div>
           ) : error ? (
             <div className="px-4 py-3 text-sm text-red-500">{error}</div>
           ) : (

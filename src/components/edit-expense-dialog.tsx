@@ -5,6 +5,7 @@ import { updateExpense } from "@/lib/actions";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Pencil, X } from "lucide-react";
 import { CurrencySelect } from "@/components/currency-select";
+import { Spinner } from "@/components/spinner";
 
 type Member = { id: string; name: string | null; email: string | null };
 type SplitType = "equal" | "percentage" | "exact" | "shares";
@@ -221,9 +222,10 @@ export function EditExpenseDialog({ expense, members, currentUserId }: Props) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-60"
               >
-                {loading ? "Saving..." : "Save Changes"}
+                {loading && <Spinner className="h-3.5 w-3.5" />}
+                {loading ? "Saving…" : "Save Changes"}
               </button>
             </div>
           </form>

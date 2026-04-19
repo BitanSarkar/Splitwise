@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { PwaRegister } from "@/components/pwa-register";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { NavigationProgress } from "@/components/navigation-progress";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${geist.className} bg-gray-50 text-gray-900 antialiased`}>
+        <NavigationProgress />
         {children}
         <PwaRegister />
         <PwaInstallPrompt />

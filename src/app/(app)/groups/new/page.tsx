@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createGroup } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/spinner";
 
 const EMOJIS = ["👥", "🏠", "✈️", "🍕", "🎉", "🏖️", "🚗", "💼", "🎮", "🏋️"];
 
@@ -97,9 +98,10 @@ export default function NewGroupPage() {
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-60"
             >
-              {loading ? "Creating..." : "Create Group"}
+              {loading && <Spinner className="h-3.5 w-3.5" />}
+              {loading ? "Creating…" : "Create Group"}
             </button>
           </div>
         </form>
