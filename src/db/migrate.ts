@@ -49,16 +49,18 @@ const MIGRATIONS: { id: string; statements: string[] }[] = [
         created_at     INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
       )`,
 
-      // Copy existing rows; fill new columns with safe defaults.
+      // Copy existing rows. All new columns (is_guest, guest_group_id,
+      // avatar_emoji, created_at) may not exist on the old table, so we use
+      // literal defaults rather than selecting them.
       `INSERT OR IGNORE INTO users_new
          (id, name, email, email_verified, image,
           is_guest, guest_group_id, avatar_emoji, created_at)
        SELECT
          id, name, email, email_verified, image,
-         COALESCE(is_guest, 0),
-         guest_group_id,
-         avatar_emoji,
-         COALESCE(created_at, strftime('%s', 'now') * 1000)
+         0,    -- is_guest: existing users are never guests
+         NULL, -- guest_group_id
+         NULL, -- avatar_emoji
+         strftime('%s', 'now') * 1000
        FROM users`,
 
       `DROP TABLE users`,
