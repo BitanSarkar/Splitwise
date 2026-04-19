@@ -5,6 +5,7 @@ import { addExpense } from "@/lib/actions";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { CurrencySelect } from "@/components/currency-select";
+import { Hint } from "@/components/hint";
 
 type Member = { id: string; name: string | null; email: string | null };
 type SplitType = "equal" | "percentage" | "exact" | "shares";
@@ -121,7 +122,14 @@ export function AddExpenseDialog({ groupId, members, currentUserId }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Split</label>
+              <div className="flex items-center gap-1.5 mb-1">
+                <label className="block text-sm font-medium text-gray-700">Split</label>
+                <Hint
+                  position="right"
+                  width="max-w-sm"
+                  text="Equal: everyone pays the same. Percentage: enter % per person (must total 100%). Exact: enter exact amounts. Shares: enter ratios (e.g. 2 adults = 2 shares each, 1 child = 1 share)."
+                />
+              </div>
               <select
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
                 value={splitType}
@@ -132,6 +140,15 @@ export function AddExpenseDialog({ groupId, members, currentUserId }: Props) {
                 <option value="exact">By exact amount ($)</option>
                 <option value="shares">By shares</option>
               </select>
+              {splitType === "percentage" && (
+                <p className="text-xs text-gray-400 mt-1">Enter % for each person below — must add up to 100%.</p>
+              )}
+              {splitType === "exact" && (
+                <p className="text-xs text-gray-400 mt-1">Enter the exact amount each person owes.</p>
+              )}
+              {splitType === "shares" && (
+                <p className="text-xs text-gray-400 mt-1">Enter a share count per person — cost is divided proportionally.</p>
+              )}
             </div>
 
             <div>

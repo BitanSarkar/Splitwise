@@ -6,6 +6,7 @@ import { simplifyDebts, simplifyDebtsConverted, type RawBalance, type Simplified
 import { formatCurrency } from "@/lib/utils";
 import { FRANKFURTER_CURRENCIES } from "@/lib/currencies";
 import { CurrencySelect } from "@/components/currency-select";
+import { Hint } from "@/components/hint";
 
 interface MemberInfo {
   id: string;
@@ -107,11 +108,15 @@ export function BalanceDisplay({ rawBalances, members, currentUserId, defaultCur
                 Who owes whom
               </p>
               {reducedCount > 0 && (
-                <span
-                  title={`${rawCount} raw debt entries reduced to ${simplifiedCount} payments via net balance simplification`}
-                  className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-1.5 py-0.5 cursor-default"
-                >
-                  {rawCount}→{simplifiedCount} simplified
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-1.5 py-0.5">
+                    {rawCount}→{simplifiedCount} simplified
+                  </span>
+                  <Hint
+                    position="right"
+                    width="max-w-xs"
+                    text={`Net balance simplification reduced ${rawCount} individual debt edges to just ${simplifiedCount} payment(s). The same money moves, but with fewer transactions. View the full breakdown in "All balances".`}
+                  />
                 </span>
               )}
             </div>

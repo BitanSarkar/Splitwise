@@ -20,6 +20,9 @@ export async function Navbar() {
             <Link href="/groups" className="hidden sm:block px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md">
               Groups
             </Link>
+            <Link href="/help" className="hidden sm:block px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md">
+              Help
+            </Link>
 
             {/* Mobile nav links */}
             <Link href="/dashboard" className="sm:hidden px-2 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md">
@@ -27,6 +30,9 @@ export async function Navbar() {
             </Link>
             <Link href="/groups" className="sm:hidden px-2 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md">
               Groups
+            </Link>
+            <Link href="/help" className="sm:hidden px-2 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md">
+              Help
             </Link>
 
             <div className="ml-1 sm:ml-3 pl-2 sm:pl-3 border-l border-gray-200 flex items-center gap-1.5 sm:gap-2">
