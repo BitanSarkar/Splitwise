@@ -70,6 +70,47 @@ const MIGRATIONS: { id: string; statements: string[] }[] = [
       `PRAGMA foreign_keys = ON`,
     ],
   },
+
+  {
+    id: "0002_users_guest_check_constraint",
+    statements: [
+      `PRAGMA foreign_keys = OFF`,
+
+      // Add a CHECK constraint that enforces the guest/real-user invariant
+      // at the DB level so no bug in app code can corrupt the data:
+      //   • guests  → is_guest=1, guest_group_id set,  email NULL
+      //   • real    → is_guest=0, guest_group_id NULL, email may be set
+      `CREATE TABLE users_new (
+        id             TEXT PRIMARY KEY NOT NULL,
+        name           TEXT,
+        email          TEXT UNIQUE,
+        email_verified INTEGER,
+        image          TEXT,
+        is_guest       INTEGER NOT NULL DEFAULT 0,
+        guest_group_id TEXT REFERENCES groups(id) ON DELETE CASCADE,
+        avatar_emoji   TEXT,
+        created_at     INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+        CHECK (
+          (is_guest = 1 AND guest_group_id IS NOT NULL AND email IS NULL)
+          OR
+          (is_guest = 0 AND guest_group_id IS NULL)
+        )
+      )`,
+
+      `INSERT INTO users_new
+         (id, name, email, email_verified, image,
+          is_guest, guest_group_id, avatar_emoji, created_at)
+       SELECT
+         id, name, email, email_verified, image,
+         is_guest, guest_group_id, avatar_emoji, created_at
+       FROM users`,
+
+      `DROP TABLE users`,
+      `ALTER TABLE users_new RENAME TO users`,
+
+      `PRAGMA foreign_keys = ON`,
+    ],
+  },
 ];
 
 // ─── runner ───────────────────────────────────────────────────────────────
