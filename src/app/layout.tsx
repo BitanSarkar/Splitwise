@@ -58,16 +58,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}} />
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
-            var el = document.getElementById('app-splash');
-            if (!el) return;
-            function hide() {
+            // NOTE: this script is in <head> so the <body> isn't parsed yet.
+            // We look up #app-splash INSIDE the setTimeout so the element exists by then.
+            setTimeout(function() {
+              var el = document.getElementById('app-splash');
+              if (!el) return;
               el.style.transition = 'opacity 0.3s ease';
               el.style.opacity = '0';
               setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
-            }
-            // Max display time: 600ms — enough to feel intentional, short enough
-            // not to block the loading skeleton from showing.
-            setTimeout(hide, 600);
+            }, 600);
           })();
         `}} />
       </head>
