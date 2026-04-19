@@ -10,6 +10,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X, Copy, Check } from "lucide-react";
 import QRCode from "qrcode";
 import { Spinner } from "@/components/spinner";
+import { dialogContentClass, DragHandle } from "@/components/dialog-primitives";
 
 // Kept in sync with GUEST_EMOJIS in src/lib/actions.ts — server rejects any
 // other emoji so the two lists must match.
@@ -126,7 +127,8 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/30 z-40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-lg w-[calc(100vw-2rem)] max-w-sm max-h-[88vh] overflow-y-auto">
+        <Dialog.Content className={dialogContentClass}>
+          <DragHandle />
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <Dialog.Title className="text-base font-semibold text-gray-900">Add Member</Dialog.Title>
             <Dialog.Close className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></Dialog.Close>

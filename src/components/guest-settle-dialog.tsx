@@ -6,6 +6,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { Spinner } from "@/components/spinner";
+import { dialogContentClass, DragHandle } from "@/components/dialog-primitives";
 
 // A member in this group — shape from `getGroupDetails`.
 export interface GuestSettleMember {
@@ -173,7 +174,8 @@ export function GuestSettleDialog({ groupId, members, rawBalances }: Props) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/30 z-40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-lg w-[calc(100vw-2rem)] max-w-sm max-h-[88vh] overflow-y-auto">
+        <Dialog.Content className={dialogContentClass}>
+          <DragHandle />
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <Dialog.Title className="text-base font-semibold text-gray-900">
               Record guest settlement

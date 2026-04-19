@@ -6,6 +6,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Pencil, X } from "lucide-react";
 import { CurrencySelect } from "@/components/currency-select";
 import { Spinner } from "@/components/spinner";
+import { dialogContentClassWide, DragHandle } from "@/components/dialog-primitives";
 
 type Member = { id: string; name: string | null; email: string | null };
 type SplitType = "equal" | "percentage" | "exact" | "shares";
@@ -115,7 +116,8 @@ export function EditExpenseDialog({ expense, members, currentUserId }: Props) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/30 z-40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-lg w-[calc(100vw-2rem)] max-w-md max-h-[88vh] overflow-y-auto">
+        <Dialog.Content className={dialogContentClassWide}>
+          <DragHandle />
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <Dialog.Title className="text-base font-semibold text-gray-900">Edit Expense</Dialog.Title>
             <Dialog.Close className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></Dialog.Close>
