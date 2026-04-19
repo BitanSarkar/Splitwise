@@ -4,6 +4,7 @@ import "./globals.css";
 import { PwaRegister } from "@/components/pwa-register";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { SplashRemover } from "@/components/splash-remover";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -23,9 +24,7 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Splitwise",
   },
-  formatDetection: {
-    telephone: false,
-  },
+  formatDetection: { telephone: false },
   openGraph: {
     type: "website",
     title: "Splitwise – Split bills with friends",
@@ -38,46 +37,42 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* Inline splash: shown before React hydrates, hidden once JS runs */}
+        {/* Splash styles — inlined so they apply before any CSS bundle loads */}
         <style dangerouslySetInnerHTML={{ __html: `
           #app-splash {
             position: fixed; inset: 0; z-index: 9999;
             background: #f9fafb;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 16px;
+            align-items: center; justify-content: center; gap: 20px;
           }
-          #app-splash .splash-icon { font-size: 52px; }
+          #app-splash .splash-icon { font-size: 56px; line-height: 1; }
+          #app-splash .splash-label {
+            font-size: 20px; font-weight: 600; color: #111827;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: -0.01em;
+          }
           #app-splash .splash-ring {
-            width: 36px; height: 36px;
+            width: 32px; height: 32px;
             border: 3px solid #d1fae5;
             border-top-color: #059669;
             border-radius: 50%;
-            animation: splash-spin 0.8s linear infinite;
+            animation: splash-spin 0.75s linear infinite;
           }
           @keyframes splash-spin { to { transform: rotate(360deg); } }
         `}} />
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function() {
-            // NOTE: this script is in <head> so the <body> isn't parsed yet.
-            // We look up #app-splash INSIDE the setTimeout so the element exists by then.
-            setTimeout(function() {
-              var el = document.getElementById('app-splash');
-              if (!el) return;
-              el.style.transition = 'opacity 0.3s ease';
-              el.style.opacity = '0';
-              setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
-            }, 600);
-          })();
-        `}} />
       </head>
       <body className={`${geist.className} bg-gray-50 text-gray-900 antialiased`}>
-        {/* Splash shown before hydration */}
+        {/* Splash: visible before React hydrates; SplashRemover hides it on mount */}
         <div id="app-splash" aria-hidden>
           <div className="splash-icon">💸</div>
+          <div className="splash-label">Splitwise</div>
           <div className="splash-ring" />
         </div>
+
         <NavigationProgress />
         {children}
+        {/* SplashRemover runs on client mount — hides splash exactly when React is ready */}
+        <SplashRemover />
         <PwaRegister />
         <PwaInstallPrompt />
       </body>
