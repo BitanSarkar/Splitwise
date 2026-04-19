@@ -8,7 +8,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 
-type Member = { id: string; name: string | null; email: string };
+type Member = { id: string; name: string | null; email: string | null };
 type Split = { userId: string; amount: number };
 type Expense = {
   id: string;
@@ -103,7 +103,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
       }
     }
     return members.map((m) => ({
-      name: (m.name ?? m.email).split(" ")[0],
+      name: (m.name ?? m.email ?? "Unknown").split(" ")[0],
       Paid: Math.round((paid.get(m.id) ?? 0) * 100) / 100,
       Consumed: Math.round((consumed.get(m.id) ?? 0) * 100) / 100,
     }));
@@ -124,7 +124,7 @@ export function GroupCharts({ expenses, members, settlements, currentUserId }: P
     }
     return members
       .map((m) => ({
-        name: (m.name ?? m.email).split(" ")[0],
+        name: (m.name ?? m.email ?? "Unknown").split(" ")[0],
         balance: Math.round((net.get(m.id) ?? 0) * 100) / 100,
         isMe: m.id === currentUserId,
       }))

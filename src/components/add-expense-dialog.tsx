@@ -6,7 +6,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { CurrencySelect } from "@/components/currency-select";
 
-type Member = { id: string; name: string | null; email: string };
+type Member = { id: string; name: string | null; email: string | null };
 type SplitType = "equal" | "percentage" | "exact" | "shares";
 
 interface Props {

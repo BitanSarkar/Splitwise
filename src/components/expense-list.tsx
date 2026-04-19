@@ -8,7 +8,7 @@ import { DeleteExpenseButton } from "@/components/delete-expense-button";
 import { EditExpenseDialog } from "@/components/edit-expense-dialog";
 import Image from "next/image";
 
-type Member = { id: string; name: string | null; email: string; image?: string | null; role?: string };
+type Member = { id: string; name: string | null; email: string | null; image?: string | null; role?: string };
 type Split = {
   expenseId: string;
   userId: string;

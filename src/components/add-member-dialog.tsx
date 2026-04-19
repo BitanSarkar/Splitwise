@@ -1,10 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addMemberToGroup, getOrCreateGroupInviteToken } from "@/lib/actions";
+import {
+  addGuestToGroup,
+  addMemberToGroup,
+  getOrCreateGroupInviteToken,
+} from "@/lib/actions";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Copy, Check } from "lucide-react";
 import QRCode from "qrcode";
+
+// Kept in sync with GUEST_EMOJIS in src/lib/actions.ts — server rejects any
+// other emoji so the two lists must match.
+const GUEST_EMOJIS = [
+  "🦊", "🐻", "🐼", "🐸", "🐙", "🦁",
+  "🐯", "🐨", "🐵", "🐶", "🐱", "🐰",
+  "🦉", "🦄", "🐝", "🐢", "🐳", "🐧",
+];
 
 export function AddMemberDialog({ groupId }: { groupId: string }) {
   const [open, setOpen] = useState(false);
@@ -12,6 +24,13 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Guest form state
+  const [guestName, setGuestName] = useState("");
+  const [guestEmoji, setGuestEmoji] = useState<string>(GUEST_EMOJIS[0]);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [guestError, setGuestError] = useState("");
+  const [guestSuccess, setGuestSuccess] = useState("");
 
   const [inviteUrl, setInviteUrl] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState("");
@@ -46,6 +65,16 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
     return () => { cancelled = true; };
   }, [open, groupId, inviteUrl]);
 
+  function resetAll() {
+    setEmail("");
+    setError("");
+    setSuccess("");
+    setGuestName("");
+    setGuestEmoji(GUEST_EMOJIS[0]);
+    setGuestError("");
+    setGuestSuccess("");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError(""); setSuccess("");
@@ -57,6 +86,22 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGuestSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setGuestLoading(true);
+    setGuestError("");
+    setGuestSuccess("");
+    try {
+      await addGuestToGroup(groupId, guestName, guestEmoji);
+      setOpen(false);
+      resetAll();
+    } catch (err) {
+      setGuestError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setGuestLoading(false);
     }
   }
 
@@ -72,7 +117,7 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEmail(""); setError(""); setSuccess(""); } }}>
+    <Dialog.Root open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetAll(); }}>
       <Dialog.Trigger asChild>
         <button className="px-2.5 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 whitespace-nowrap">
           + Member
@@ -138,6 +183,63 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               {success && <p className="text-sm text-emerald-600">{success}</p>}
+              <button
+                type="submit"
+                disabled={loading || !email.trim()}
+                className="w-full px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {loading ? "Adding..." : "Add by email"}
+              </button>
+            </form>
+
+            <div className="border-t border-gray-100" />
+
+            {/* Guest add — no account needed */}
+            <form onSubmit={handleGuestSubmit} className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Or add a guest</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  For someone without an account. Everyone in the group can see
+                  their balances and record settlements on their behalf.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Dad, Priya"
+                  maxLength={50}
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Avatar</label>
+                <div className="grid grid-cols-9 gap-1">
+                  {GUEST_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setGuestEmoji(emoji)}
+                      className={`h-8 rounded-md text-lg flex items-center justify-center border transition ${
+                        guestEmoji === emoji
+                          ? "border-emerald-500 bg-emerald-50"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                      aria-label={`Pick ${emoji}`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {guestError && <p className="text-sm text-red-500">{guestError}</p>}
+              {guestSuccess && <p className="text-sm text-emerald-600">{guestSuccess}</p>}
+
               <div className="flex gap-2">
                 <Dialog.Close asChild>
                   <button type="button" className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
@@ -146,10 +248,10 @@ export function AddMemberDialog({ groupId }: { groupId: string }) {
                 </Dialog.Close>
                 <button
                   type="submit"
-                  disabled={loading || !email.trim()}
+                  disabled={guestLoading || !guestName.trim()}
                   className="flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
                 >
-                  {loading ? "Adding..." : "Add"}
+                  {guestLoading ? "Adding…" : `Add guest`}
                 </button>
               </div>
             </form>

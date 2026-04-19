@@ -4,15 +4,31 @@ import {
   integer,
   real,
   sqliteTable,
+  type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
 // NextAuth required tables
+// Note: this table also holds "guest" rows — members added to a group who
+// don't have a real account. They share the users table so all existing
+// queries (expenses, splits, settlements, balances) work unchanged. Guests
+// are distinguished by `isGuest = true` and belong to exactly one group via
+// `guestGroupId`. Their `email` is null (email is nullable to allow this),
+// so they cannot sign in (no matching accounts row).
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   name: text("name"),
-  email: text("email").notNull().unique(),
+  email: text("email").unique(),
   emailVerified: integer("email_verified", { mode: "timestamp_ms" }),
   image: text("image"),
+  isGuest: integer("is_guest", { mode: "boolean" }).default(false).notNull(),
+  // Only set for guest rows — the group they were added to. Cascade delete
+  // with the group so orphan guests don't linger after a group is deleted.
+  guestGroupId: text("guest_group_id").references(
+    (): AnySQLiteColumn => groups.id,
+    { onDelete: "cascade" }
+  ),
+  // Emoji chosen by whoever added the guest, used as an avatar.
+  avatarEmoji: text("avatar_emoji"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(strftime('%s', 'now') * 1000)`)
     .notNull(),
@@ -147,6 +163,8 @@ export const activities = sqliteTable("activities", {
       "settlement",
       "member_added",
       "group_created",
+      "guest_added",
+      "guest_settlement",
     ],
   }).notNull(),
   description: text("description").notNull(),

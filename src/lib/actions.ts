@@ -17,6 +17,7 @@ import { isNull } from "drizzle-orm";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { generateId, simplifyDebts } from "@/lib/utils";
 import { refresh } from "next/cache";
+import { emitGroupEvent } from "@/lib/group-events";
 
 async function requireAuth() {
   const session = await auth();
@@ -93,6 +94,8 @@ export async function getGroupDetails(groupId: string) {
       name: users.name,
       email: users.email,
       image: users.image,
+      isGuest: users.isGuest,
+      avatarEmoji: users.avatarEmoji,
       role: groupMembers.role,
     })
     .from(groupMembers)
@@ -151,6 +154,151 @@ export async function addMemberToGroup(groupId: string, email: string) {
   }
 
   refresh();
+  emitGroupEvent(groupId, "member");
+}
+
+// Guests
+// A guest is a member of one specific group who doesn't have (and can't get)
+// a real account. They participate in expenses/splits/settlements identically
+// to real users; the only differences are visual (badge + emoji avatar) and
+// that they can't log in. Any existing member of the group may add a guest.
+const GUEST_EMOJIS = [
+  "🦊", "🐻", "🐼", "🐸", "🐙", "🦁",
+  "🐯", "🐨", "🐵", "🐶", "🐱", "🐰",
+  "🦉", "🦄", "🐝", "🐢", "🐳", "🐧",
+];
+
+export async function addGuestToGroup(
+  groupId: string,
+  name: string,
+  emoji: string
+) {
+  const user = await requireAuth();
+
+  const trimmedName = name.trim();
+  if (!trimmedName) throw new Error("Guest name is required");
+  if (trimmedName.length > 50)
+    throw new Error("Guest name must be 50 characters or fewer");
+  if (!GUEST_EMOJIS.includes(emoji))
+    throw new Error("Invalid avatar choice");
+
+  // Caller must be a member of the group.
+  const callerMembership = await db.query.groupMembers.findFirst({
+    where: and(
+      eq(groupMembers.groupId, groupId),
+      eq(groupMembers.userId, user.id!)
+    ),
+  });
+  if (!callerMembership) throw new Error("Not a member of this group");
+
+  const guestId = generateId();
+
+  await db.insert(users).values({
+    id: guestId,
+    name: trimmedName,
+    email: null,
+    isGuest: true,
+    guestGroupId: groupId,
+    avatarEmoji: emoji,
+  });
+
+  await db.insert(groupMembers).values({
+    id: generateId(),
+    groupId,
+    userId: guestId,
+    role: "member",
+  });
+
+  await db.insert(activities).values({
+    id: generateId(),
+    groupId,
+    userId: user.id!,
+    type: "guest_added",
+    description: `${user.name} added guest ${emoji} ${trimmedName} to the group`,
+  });
+
+  refresh();
+  emitGroupEvent(groupId, "guest");
+  return { guestId };
+}
+
+// Record a settlement on behalf of a guest. At least one of {from, to} must
+// be a guest belonging to this group — for real-user-to-real-user settlement,
+// use the existing `settleUp` action (which is current-user-centric).
+export async function recordGuestSettlement(data: {
+  groupId: string;
+  fromUserId: string;
+  toUserId: string;
+  amount: number;
+  currency: string;
+  note?: string;
+}) {
+  const user = await requireAuth();
+
+  if (data.fromUserId === data.toUserId)
+    throw new Error("From and To must be different members");
+  if (!(data.amount > 0)) throw new Error("Amount must be greater than zero");
+
+  // Caller must be a member of the group.
+  const callerMembership = await db.query.groupMembers.findFirst({
+    where: and(
+      eq(groupMembers.groupId, data.groupId),
+      eq(groupMembers.userId, user.id!)
+    ),
+  });
+  if (!callerMembership) throw new Error("Not a member of this group");
+
+  // Both sides must be members of the group.
+  const sides = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      isGuest: users.isGuest,
+      guestGroupId: users.guestGroupId,
+    })
+    .from(groupMembers)
+    .innerJoin(users, eq(groupMembers.userId, users.id))
+    .where(
+      and(
+        eq(groupMembers.groupId, data.groupId),
+        inArray(users.id, [data.fromUserId, data.toUserId])
+      )
+    );
+  const from = sides.find((s) => s.id === data.fromUserId);
+  const to = sides.find((s) => s.id === data.toUserId);
+  if (!from || !to)
+    throw new Error("Both parties must be members of this group");
+
+  // Require at least one guest side — guest settlements belong to the guest
+  // flow, real-user settlements should go through the regular Settle Up.
+  const fromIsGuestHere =
+    from.isGuest && from.guestGroupId === data.groupId;
+  const toIsGuestHere = to.isGuest && to.guestGroupId === data.groupId;
+  if (!fromIsGuestHere && !toIsGuestHere)
+    throw new Error(
+      "At least one party must be a guest — use Settle Up for real-user settlements"
+    );
+
+  await db.insert(settlements).values({
+    id: generateId(),
+    groupId: data.groupId,
+    fromUserId: data.fromUserId,
+    toUserId: data.toUserId,
+    amount: data.amount,
+    currency: data.currency,
+    note: data.note,
+  });
+
+  await db.insert(activities).values({
+    id: generateId(),
+    groupId: data.groupId,
+    userId: user.id!,
+    type: "guest_settlement",
+    description: `${user.name} recorded: ${from.name ?? "Someone"} paid ${to.name ?? "someone"} ${data.currency} ${data.amount.toFixed(2)}`,
+  });
+
+  refresh();
+  emitGroupEvent(data.groupId, "settlement");
 }
 
 // Expenses
@@ -230,6 +378,7 @@ export async function addExpense(data: {
   });
 
   refresh();
+  emitGroupEvent(data.groupId, "expense");
 }
 
 export async function deleteExpense(expenseId: string) {
@@ -256,6 +405,7 @@ export async function deleteExpense(expenseId: string) {
   });
 
   refresh();
+  emitGroupEvent(expense.groupId, "expense");
 }
 
 export async function updateExpense(
@@ -335,6 +485,7 @@ export async function updateExpense(
   });
 
   refresh();
+  emitGroupEvent(expense.groupId, "expense");
 }
 
 export async function getGroupExpenses(groupId: string) {
@@ -446,6 +597,7 @@ export async function settleUp(data: {
   });
 
   refresh();
+  emitGroupEvent(data.groupId, "settlement");
 }
 
 // Activity feed

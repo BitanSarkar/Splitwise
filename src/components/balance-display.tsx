@@ -10,7 +10,7 @@ import { CurrencySelect } from "@/components/currency-select";
 interface MemberInfo {
   id: string;
   name: string | null;
-  email: string;
+  email: string | null;
 }
 
 interface Props {

@@ -8,13 +8,15 @@ import {
 import { AddExpenseDialog } from "@/components/add-expense-dialog";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { SettleUpDialog } from "@/components/settle-up-dialog";
+import { GuestSettleDialog } from "@/components/guest-settle-dialog";
 import { BalanceDisplay } from "@/components/balance-display";
 import { ExpenseList } from "@/components/expense-list";
 import { GroupCharts } from "@/components/group-charts";
+import { GroupRealtime } from "@/components/group-realtime";
 import { formatDate, simplifyDebts, getDominantCurrency } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { Download } from "lucide-react";
+import { Download, ArrowRight } from "lucide-react";
 import { db } from "@/db";
 import { settlements as settlementsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -63,6 +65,7 @@ export default async function GroupPage({ params }: Props) {
 
   return (
     <div className="space-y-4 sm:space-y-5">
+      <GroupRealtime groupId={groupId} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-2 min-w-0">
@@ -82,6 +85,7 @@ export default async function GroupPage({ params }: Props) {
           </Link>
           <AddMemberDialog groupId={groupId} />
           <SettleUpDialog groupId={groupId} settlements={settlementsWithNames} currentUserId={currentUserId} />
+          <GuestSettleDialog groupId={groupId} members={members} rawBalances={rawBalances} />
           <AddExpenseDialog groupId={groupId} members={members} currentUserId={currentUserId} />
         </div>
       </div>
@@ -95,6 +99,19 @@ export default async function GroupPage({ params }: Props) {
             currentUserId={currentUserId}
             defaultCurrency={dominantCurrency}
           />
+
+          {rawBalances.length > 0 && (
+            <Link
+              href={`/groups/${groupId}/balances`}
+              className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div>
+                <p className="text-sm font-medium text-gray-800">All balances</p>
+                <p className="text-xs text-gray-400 mt-0.5">Full pairwise breakdown — including guests</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            </Link>
+          )}
 
           <ExpenseList expenses={expenses} members={members} currentUserId={currentUserId} />
 
@@ -116,8 +133,16 @@ export default async function GroupPage({ params }: Props) {
             <div className="divide-y divide-gray-50">
               {members.map((member) => (
                 <div key={member.id} className="flex items-center gap-2.5 px-4 py-2.5">
-                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {member.image ? (
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                      member.isGuest ? "bg-amber-50" : "bg-emerald-100"
+                    }`}
+                  >
+                    {member.isGuest ? (
+                      <span className="text-base leading-none">
+                        {member.avatarEmoji ?? "👤"}
+                      </span>
+                    ) : member.image ? (
                       <Image src={member.image} alt="" width={28} height={28} className="rounded-full" />
                     ) : (
                       <span className="text-xs font-medium text-emerald-700">
@@ -131,9 +156,13 @@ export default async function GroupPage({ params }: Props) {
                       {member.id === currentUserId && <span className="text-gray-400"> (you)</span>}
                     </p>
                   </div>
-                  {member.role === "admin" && (
+                  {member.isGuest ? (
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                      Guest
+                    </span>
+                  ) : member.role === "admin" ? (
                     <span className="text-xs text-gray-400">Admin</span>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>
