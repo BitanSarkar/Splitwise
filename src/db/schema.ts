@@ -4,6 +4,7 @@ import {
   integer,
   real,
   sqliteTable,
+  index,
   type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
@@ -78,101 +79,127 @@ export const groups = sqliteTable("groups", {
     .notNull(),
 });
 
-export const groupMembers = sqliteTable("group_members", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id")
-    .notNull()
-    .references(() => groups.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  role: text("role", { enum: ["admin", "member"] }).default("member").notNull(),
-  joinedAt: integer("joined_at", { mode: "timestamp_ms" })
-    .default(sql`(strftime('%s', 'now') * 1000)`)
-    .notNull(),
-});
+export const groupMembers = sqliteTable(
+  "group_members",
+  {
+    id: text("id").primaryKey(),
+    groupId: text("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: text("role", { enum: ["admin", "member"] }).default("member").notNull(),
+    joinedAt: integer("joined_at", { mode: "timestamp_ms" })
+      .default(sql`(strftime('%s', 'now') * 1000)`)
+      .notNull(),
+  },
+  (t) => [
+    index("idx_group_members_group_id").on(t.groupId),
+    index("idx_group_members_user_id").on(t.userId),
+  ]
+);
 
-export const expenses = sqliteTable("expenses", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id")
-    .notNull()
-    .references(() => groups.id, { onDelete: "cascade" }),
-  description: text("description").notNull(),
-  amount: real("amount").notNull(),
-  currency: text("currency").default("USD").notNull(),
-  paidBy: text("paid_by")
-    .notNull()
-    .references(() => users.id),
-  splitType: text("split_type", {
-    enum: ["equal", "percentage", "exact", "shares"],
-  })
-    .default("equal")
-    .notNull(),
-  createdBy: text("created_by")
-    .notNull()
-    .references(() => users.id),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(strftime('%s', 'now') * 1000)`)
-    .notNull(),
-  settledAt: integer("settled_at", { mode: "timestamp_ms" }),
-  isDeleted: integer("is_deleted", { mode: "boolean" }).default(false).notNull(),
-});
+export const expenses = sqliteTable(
+  "expenses",
+  {
+    id: text("id").primaryKey(),
+    groupId: text("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    description: text("description").notNull(),
+    amount: real("amount").notNull(),
+    currency: text("currency").default("USD").notNull(),
+    paidBy: text("paid_by")
+      .notNull()
+      .references(() => users.id),
+    splitType: text("split_type", {
+      enum: ["equal", "percentage", "exact", "shares"],
+    })
+      .default("equal")
+      .notNull(),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(strftime('%s', 'now') * 1000)`)
+      .notNull(),
+    settledAt: integer("settled_at", { mode: "timestamp_ms" }),
+    isDeleted: integer("is_deleted", { mode: "boolean" }).default(false).notNull(),
+  },
+  (t) => [index("idx_expenses_group_id").on(t.groupId)]
+);
 
-export const expenseSplits = sqliteTable("expense_splits", {
-  id: text("id").primaryKey(),
-  expenseId: text("expense_id")
-    .notNull()
-    .references(() => expenses.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  amount: real("amount").notNull(),
-  percentage: real("percentage"),
-  shares: integer("shares"),
-  isPaid: integer("is_paid", { mode: "boolean" }).default(false).notNull(),
-});
+export const expenseSplits = sqliteTable(
+  "expense_splits",
+  {
+    id: text("id").primaryKey(),
+    expenseId: text("expense_id")
+      .notNull()
+      .references(() => expenses.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    amount: real("amount").notNull(),
+    percentage: real("percentage"),
+    shares: integer("shares"),
+    isPaid: integer("is_paid", { mode: "boolean" }).default(false).notNull(),
+  },
+  (t) => [index("idx_expense_splits_expense_id").on(t.expenseId)]
+);
 
-export const settlements = sqliteTable("settlements", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id")
-    .notNull()
-    .references(() => groups.id, { onDelete: "cascade" }),
-  fromUserId: text("from_user_id")
-    .notNull()
-    .references(() => users.id),
-  toUserId: text("to_user_id")
-    .notNull()
-    .references(() => users.id),
-  amount: real("amount").notNull(),
-  currency: text("currency").default("USD").notNull(),
-  note: text("note"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(strftime('%s', 'now') * 1000)`)
-    .notNull(),
-});
+export const settlements = sqliteTable(
+  "settlements",
+  {
+    id: text("id").primaryKey(),
+    groupId: text("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    fromUserId: text("from_user_id")
+      .notNull()
+      .references(() => users.id),
+    toUserId: text("to_user_id")
+      .notNull()
+      .references(() => users.id),
+    amount: real("amount").notNull(),
+    currency: text("currency").default("USD").notNull(),
+    note: text("note"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(strftime('%s', 'now') * 1000)`)
+      .notNull(),
+  },
+  (t) => [index("idx_settlements_group_id").on(t.groupId)]
+);
 
-export const activities = sqliteTable("activities", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id").references(() => groups.id, { onDelete: "cascade" }),
-  userId: text("user_id").references(() => users.id),
-  type: text("type", {
-    enum: [
-      "expense_added",
-      "expense_updated",
-      "expense_deleted",
-      "settlement",
-      "member_added",
-      "group_created",
-      "guest_added",
-      "guest_settlement",
-    ],
-  }).notNull(),
-  description: text("description").notNull(),
-  metadata: text("metadata"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(strftime('%s', 'now') * 1000)`)
-    .notNull(),
-});
+export const activities = sqliteTable(
+  "activities",
+  {
+    id: text("id").primaryKey(),
+    groupId: text("group_id").references(() => groups.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id),
+    type: text("type", {
+      enum: [
+        "expense_added",
+        "expense_updated",
+        "expense_deleted",
+        "settlement",
+        "member_added",
+        "group_created",
+        "guest_added",
+        "guest_settlement",
+      ],
+    }).notNull(),
+    description: text("description").notNull(),
+    metadata: text("metadata"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(strftime('%s', 'now') * 1000)`)
+      .notNull(),
+  },
+  (t) => [
+    index("idx_activities_group_id").on(t.groupId),
+    index("idx_activities_created_at").on(t.createdAt),
+  ]
+);
 
 export const groupInvites = sqliteTable("group_invites", {
   id: text("id").primaryKey(),

@@ -111,6 +111,19 @@ const MIGRATIONS: { id: string; statements: string[] }[] = [
       `PRAGMA foreign_keys = ON`,
     ],
   },
+
+  {
+    id: "0003_indexes",
+    statements: [
+      `CREATE INDEX IF NOT EXISTS idx_group_members_group_id    ON group_members(group_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_group_members_user_id     ON group_members(user_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_expenses_group_id         ON expenses(group_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_expense_splits_expense_id ON expense_splits(expense_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_settlements_group_id      ON settlements(group_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_activities_group_id       ON activities(group_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_activities_created_at     ON activities(created_at DESC)`,
+    ],
+  },
 ];
 
 // ─── runner ───────────────────────────────────────────────────────────────
