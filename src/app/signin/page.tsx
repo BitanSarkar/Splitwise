@@ -1,4 +1,17 @@
+import type { Metadata } from "next";
 import { signIn } from "@/auth";
+
+export const metadata: Metadata = {
+  title: "Sign In – Splitwise | Free Bill Splitting App",
+  description:
+    "Sign in to Splitwise — the free bill splitting app to track shared expenses with friends, family, and teammates. Split bills equally, by percentage, or by exact amount.",
+  alternates: { canonical: "https://splitwise.bitsar.net/signin" },
+  openGraph: {
+    url: "https://splitwise.bitsar.net/signin",
+    title: "Sign In – Splitwise | Free Bill Splitting App",
+    description: "Sign in to start splitting expenses with friends. Free, fast, no credit card.",
+  },
+};
 
 interface Props {
   searchParams: Promise<{ callbackUrl?: string }>;

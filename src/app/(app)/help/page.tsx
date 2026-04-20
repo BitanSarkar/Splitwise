@@ -1,5 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "How to Use Splitwise – Help & Guide",
+  description:
+    "Complete guide to Splitwise: create groups, add expenses, split bills equally or by percentage, use guest members, settle up, export to Excel, and understand live balance updates.",
+  alternates: { canonical: "https://splitwise.bitsar.net/help" },
+  openGraph: {
+    url: "https://splitwise.bitsar.net/help",
+    title: "How to Use Splitwise – Help & Guide",
+    description:
+      "Everything you need to know — from your first group to settling up with guests. Splitwise help documentation.",
+  },
+};
 
 function Section({ id, emoji, title, children }: { id: string; emoji: string; title: string; children: React.ReactNode }) {
   return (
